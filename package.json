@@ -9,10 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@t3-oss/env-nextjs": "^0.7.1",
     "next": "14.0.4",
     "react": "^18",
     "react-dom": "^18",
-    "skyway-video-processors": "^1.0.1"
+    "server-only": "^0.0.1",
+    "skyway-video-processors": "^1.0.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20",
