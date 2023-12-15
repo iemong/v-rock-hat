@@ -29,5 +29,6 @@ export async function analyzeImageIfWearRockCap(base64String: string) {
     ],
   });
   const result = res.choices[0];
-  return result.message.content?.toLowerCase() === "true";
+  const message = result.message.content?.toLowerCase() ?? "false";
+  return message.includes("true");
 }
