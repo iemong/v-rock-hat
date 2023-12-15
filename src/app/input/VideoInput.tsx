@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useTransition } from "react";
 import { analyzeImageIfWearRockCap } from "@/app/input/actions";
+import { Button } from "@/components/ui/button";
 
 export const VideoInput = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -84,17 +85,18 @@ export const VideoInput = () => {
     });
   };
   return (
-    <div>
-      <button onClick={playVideo}>再生</button>
-      <button onClick={captureImage}>スクショ</button>
-      <button onClick={handleAnalyze}>分析</button>
+    <div className={"relative"}>
+      <div className={"absolute flex gap-4"}>
+        <Button onClick={playVideo}>再生</Button>
+        <Button onClick={handleAnalyze}>分析</Button>
+      </div>
       <video
         ref={videoRef}
         autoPlay
         playsInline
         className={"w-screen h-screen object-cover object-center"}
       />
-      <canvas width={512} height={512} ref={canvasRef} />
+      <canvas width={512} height={512} ref={canvasRef} className={"hidden"} />
     </div>
   );
 };
