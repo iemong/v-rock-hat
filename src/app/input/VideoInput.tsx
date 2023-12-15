@@ -13,7 +13,7 @@ export const VideoInput = () => {
   const playVideo = useCallback(async () => {
     reset();
     const { VirtualBackground } = await import("skyway-video-processors");
-    const backgroundProcessor = new VirtualBackground({ image: "green.png" });
+    const backgroundProcessor = new VirtualBackground({ image: "bg.png" });
     await backgroundProcessor.initialize();
     const result = await backgroundProcessor.createProcessedStream();
     if (result === null || result.track === null) {
