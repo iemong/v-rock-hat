@@ -1,14 +1,19 @@
 "use client";
 
-import { useCallback, useRef, useTransition } from "react";
+import { useCallback, useRef, useState, useTransition } from "react";
 import { analyzeImageIfWearRockCap } from "@/app/input/actions";
 import { Button } from "@/components/ui/button";
+import { useInterval } from "usehooks-ts";
+
+const INTERVAL = 10 * 1000;
 
 export const VideoInput = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  const [isDetectedCap, setDetectedCap] = useState<boolean>(false);
+  const [isPlaying, setPlaying] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
 
   const playVideo = useCallback(async () => {
@@ -74,28 +79,53 @@ export const VideoInput = () => {
     return canvas.toDataURL("image/jpeg");
   }, []);
 
-  const handleAnalyze = () => {
+  const analyze = useCallback(() => {
     const base64Image = captureImage();
     if (base64Image === undefined) {
       return;
     }
     startTransition(async () => {
-      const res = await analyzeImageIfWearRockCap(base64Image);
-      console.log(res);
+      const bool = await analyzeImageIfWearRockCap(base64Image);
+      setDetectedCap(bool);
     });
-  };
+  }, [captureImage]);
+
+  useInterval(
+    () => {
+      if (isPlaying === true && isPending === false) {
+        analyze();
+      }
+    },
+    isPlaying ? INTERVAL : null,
+  );
+
   return (
-    <div className={"relative"}>
-      <div className={"absolute flex gap-4"}>
-        <Button onClick={playVideo}>再生</Button>
-        <Button onClick={handleAnalyze}>分析</Button>
+    <div className={"relative w-screen h-screen"}>
+      <div className={"absolute flex gap-4 bottom-4 right-4 z-10"}>
+        <Button onClick={playVideo}>Play</Button>
+        {isPlaying ? (
+          <Button onClick={() => setPlaying(false)}>Stop</Button>
+        ) : (
+          <Button onClick={() => setPlaying(true)}>Analyze</Button>
+        )}
       </div>
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        className={"w-screen h-screen object-cover object-center"}
-      />
+      <div className={"relative"}>
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          className={"w-screen h-screen object-cover object-center"}
+        />
+        {isDetectedCap && (
+          <img
+            src="/bg.png"
+            alt=""
+            className={
+              "w-screen h-screen object-center object-cover absolute top-0 left-0"
+            }
+          />
+        )}
+      </div>
       <canvas width={512} height={512} ref={canvasRef} className={"hidden"} />
     </div>
   );
