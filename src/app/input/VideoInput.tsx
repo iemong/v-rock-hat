@@ -54,7 +54,6 @@ export const VideoInput = () => {
   const handleDeviceChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setCurrentDevice(event.target.value);
   };
-  console.log(currentDevice)
 
   useEffect(() => {
     navigator.mediaDevices.enumerateDevices()
@@ -143,14 +142,14 @@ export const VideoInput = () => {
             playsInline
             className={"w-screen h-screen object-cover object-center"}
         />
-        {isDetectedCap && (
-          <img
-            src={`/${BG_IMAGE}`}
-            alt=""
-            className={
-              "w-screen h-screen object-center object-cover absolute top-0 left-0"
-            }
-          />
+        {!isDetectedCap && (
+          <div className={'w-screen h-screen overflow-hidden absolute top-0 left-0'}>
+            <img
+              src={`/${BG_IMAGE}`}
+              className={'w-full h-full'}
+              alt=""
+            />
+          </div>
         )}
       </div>
       <canvas width={512} height={512} ref={canvasRef} className={"hidden"} />
