@@ -1,27 +1,33 @@
 "use client";
 
-import { useCallback, useRef, useState, useTransition } from "react";
+import {ChangeEvent, useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { analyzeImageIfWearRockCap } from "@/app/input/actions";
 import { Button } from "@/components/ui/button";
 import { useInterval } from "usehooks-ts";
 
-const INTERVAL = 10 * 1000;
+const INTERVAL = 5 * 1000;
+const BG_IMAGE = "bg.png";
 
 export const VideoInput = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [currentDevice, setCurrentDevice] = useState<string>('');
   const [isDetectedCap, setDetectedCap] = useState<boolean>(false);
   const [isPlaying, setPlaying] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
 
   const playVideo = useCallback(async () => {
+    if (currentDevice === '') {
+      return;
+    }
     reset();
     const { VirtualBackground } = await import("skyway-video-processors");
-    const backgroundProcessor = new VirtualBackground({ image: "bg.png" });
+    const backgroundProcessor = new VirtualBackground({ image: BG_IMAGE });
     await backgroundProcessor.initialize();
-    const result = await backgroundProcessor.createProcessedStream();
+    const result = await backgroundProcessor.createProcessedStream({ constraints: { deviceId: currentDevice } });
     if (result === null || result.track === null) {
       return;
     }
@@ -34,7 +40,7 @@ export const VideoInput = () => {
     videoRef.current.onloadedmetadata = () => {
       videoRef.current?.play();
     };
-  }, []);
+  }, [currentDevice]);
 
   const reset = () => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -44,6 +50,22 @@ export const VideoInput = () => {
       videoRef.current.srcObject = null;
     }
   };
+
+  const handleDeviceChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setCurrentDevice(event.target.value);
+  };
+  console.log(currentDevice)
+
+  useEffect(() => {
+    navigator.mediaDevices.enumerateDevices()
+        .then(devices => {
+          const videoDevices = devices.filter(device => device.kind === 'videoinput');
+          setDevices(videoDevices);
+          if (videoDevices.length > 0) {
+            setCurrentDevice(videoDevices[0].deviceId);
+          }
+        });
+  }, []);
 
   const captureImage = useCallback(() => {
     const video = videoRef.current;
@@ -104,21 +126,26 @@ export const VideoInput = () => {
       <div className={"absolute flex gap-4 bottom-4 right-4 z-10"}>
         <Button onClick={playVideo}>Play</Button>
         {isPlaying ? (
-          <Button onClick={() => setPlaying(false)}>Stop</Button>
+            <Button onClick={() => setPlaying(false)}>Stop</Button>
         ) : (
-          <Button onClick={() => setPlaying(true)}>Analyze</Button>
+            <Button onClick={() => setPlaying(true)}>Analyze</Button>
         )}
+        <select onChange={handleDeviceChange} value={currentDevice}>
+          {devices.map(device => (
+              <option key={device.deviceId} value={device.deviceId}>{device.label}</option>
+          ))}
+        </select>
       </div>
       <div className={"relative"}>
         <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          className={"w-screen h-screen object-cover object-center"}
+            ref={videoRef}
+            autoPlay
+            playsInline
+            className={"w-screen h-screen object-cover object-center"}
         />
         {isDetectedCap && (
           <img
-            src="/bg.png"
+            src={`/${BG_IMAGE}`}
             alt=""
             className={
               "w-screen h-screen object-center object-cover absolute top-0 left-0"
