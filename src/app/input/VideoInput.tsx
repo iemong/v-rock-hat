@@ -142,7 +142,7 @@ export const VideoInput = () => {
             playsInline
             className={"w-screen h-screen object-cover object-center"}
         />
-        {!isDetectedCap && (
+        {isDetectedCap && (
           <div className={'w-screen h-screen overflow-hidden absolute top-0 left-0'}>
             <img
               src={`/${BG_IMAGE}`}
