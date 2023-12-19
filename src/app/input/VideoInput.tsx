@@ -146,7 +146,7 @@ export const VideoInput = () => {
           <div className={'w-screen h-screen overflow-hidden absolute top-0 left-0'}>
             <img
               src={`/${BG_IMAGE}`}
-              className={'w-full h-full'}
+              className={'w-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 aspect-[640/480]'}
               alt=""
             />
           </div>
